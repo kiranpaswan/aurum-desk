@@ -89,6 +89,13 @@ async function handleApi(req, res, url) {
       const body = JSON.parse((await readBody(req)).toString("utf8") || "{}");
       return sendJson(res, 200, await store.removeStrategy(body.id));
     }
+    if (key === "GET /api/book.php") return sendJson(res, 200, (await store.get("book")) || {});
+    if (key === "POST /api/book.php") {
+      const body = JSON.parse((await readBody(req)).toString("utf8") || "{}");
+      const saved = await store.replaceBook(body, body.baseUpdatedAt);
+      if (!saved.ok) return sendJson(res, 409, { error: "The other desk saved first.", book: saved.book });
+      return sendJson(res, 200, { ok: true });
+    }
     if (key === "GET /api/journal.php") return sendJson(res, 200, (await store.get("journal")) || []);
     if (key === "POST /api/journal.php") {
       const body = JSON.parse((await readBody(req)).toString("utf8") || "{}");
