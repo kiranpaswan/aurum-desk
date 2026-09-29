@@ -16,6 +16,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="os.css" />
   </head>
   <body>
     <div class="grain" aria-hidden="true"></div>
@@ -42,7 +43,18 @@
           </p>
         </div>
       </header>
+      <nav class="desk-nav" aria-label="Desk sections">
+        <button type="button" data-view="desk" class="active">Desk</button>
+        <button type="button" data-view="cockpit">Cockpit</button>
+        <button type="button" data-view="plans">Risk-O-Meter</button>
+        <button type="button" data-view="probboard">Probability Board</button>
+        <button type="button" data-view="impact">Impact SL</button>
+        <button type="button" data-view="journal">Journal</button>
+        <button type="button" class="id-chip" id="idChip">who am I?</button>
+        <span class="sync" id="syncStatus"></span>
+      </nav>
 
+      <div class="view active" id="view-desk">
       <section class="goal" aria-label="Profit goal">
         <div class="booked">
           <p class="kicker">Booked profit</p>
@@ -223,14 +235,307 @@
         </form>
         <div id="trades"></div>
       </section>
+      </div>
+
+<div class="os">
+<!-- ================= VIEW 1: IMPACT SL ================= -->
+  <div class="view" id="view-cockpit">
+    <div id="cockpitGate" class="card" style="display:none; max-width:420px; margin:40px auto; text-align:center;">
+      <h2>Who's using this device?</h2>
+      <p style="font-size:12px; color:var(--muted);">This decides which confluence marks you can edit. Pick once per device — switch later from the header chip.</p>
+      <div class="idpick">
+        <button class="bvd" id="pickVd">I'm VD</button>
+        <button class="bkp" id="pickKp">I'm KP</button>
+      </div>
+    </div>
+    <div id="cockpitMain" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+        <div style="font-size:12px; color:var(--muted);">Shared confluence board — both of you see the same state. <span class="num" id="prepTimer"></span></div>
+        <div style="display:flex; gap:8px;">
+          <button class="small-btn" id="enableAlerts">🔔 Enable alerts</button>
+          <button class="small-btn" id="newSession">↻ New session</button>
+        </div>
+      </div>
+
+      <!-- Account Cards -->
+      <div class="acc-grid" id="accGrid" style="margin-bottom:20px;"></div>
+
+      <!-- VD / KP Ready -->
+      <div class="card" style="margin-bottom:20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+          <div>
+            <div style="font-size:13px; font-weight:600;">Prep time — 30–45 min recommended</div>
+            <div id="prepStatusMsg" style="font-size:12px; color:var(--muted); margin-top:3px;">Mark ready when prep is complete.</div>
+          </div>
+          <button class="small-btn" id="skipPrep">Skip by agreement</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <button id="vdReadyBtn" style="padding:14px; border-radius:8px; font-weight:700; font-size:14px; cursor:pointer; font-family:'Space Grotesk',sans-serif; border:1px solid var(--line); background:var(--panel-2); color:var(--muted);">VD: Ready?</button>
+          <button id="kpReadyBtn" style="padding:14px; border-radius:8px; font-weight:700; font-size:14px; cursor:pointer; font-family:'Space Grotesk',sans-serif; border:1px solid var(--line); background:var(--panel-2); color:var(--muted);">KP: Ready?</button>
+        </div>
+        <div id="bothReadyMsg" style="display:none; margin-top:10px; font-size:12px; color:var(--accent); text-align:center; font-weight:600;">✓ Both marked ready — you're good to go.</div>
+      </div>
+
+      <div id="avoidBanner" class="warn-banner" style="display:none;"></div>
+      <div class="cockpit-cols">
+        <div>
+          <div class="card"><h2>1 · Market Environment</h2><div id="ckStep1"></div></div>
+          <div class="card">
+            <h2>News Alarms</h2>
+            <div class="save-row" style="grid-template-columns:1fr 1fr auto;">
+              <input type="text" id="alLabel" placeholder="e.g. NFP release">
+              <input type="datetime-local" id="alTime">
+              <button class="save-btn" id="alAdd">Add</button>
+            </div>
+            <div id="alList" style="margin-top:12px;"></div>
+            <div class="plans-status">Keep this tab open — it beeps and pops a notification when an alarm hits.</div>
+          </div>
+          <div class="card"><h2>2 · Analysis Confluence</h2><div id="ckStep2"></div></div>
+          <div class="card"><h2>3 · Advanced Logic</h2><div id="ckStep4"></div></div>
+          <div class="card"><h2>📅 1 Day Check</h2><div id="ckDay"></div></div>
+          <div class="card"><h2>⏳ 3 Hr Check</h2><div id="ck3h"></div></div>
+          <div class="card"><h2>⏱ 30 Min Check</h2><div id="ck30m"></div></div>
+        </div>
+        <div>
+          <div class="card">
+            <h2>Notes</h2>
+            <label style="color:var(--vd);">VD's note</label>
+            <textarea id="noteVd" rows="3" style="border-color:rgba(61,220,151,0.4); margin-bottom:12px;"></textarea>
+            <label style="color:var(--kp);">KP's note</label>
+            <textarea id="noteKp" rows="3" style="border-color:rgba(78,161,245,0.4);"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="cockpitOffline" class="plans-status" style="display:none;">Cockpit needs the database — set up api/config.php first.</div>
+  </div>
+
+  <div class="view" id="view-plans">
+    <div class="card">
+      <h2 style="display:flex; justify-content:space-between; align-items:center;">Risk-O-Meter <span class="sync" id="probSync"></span></h2>
+    </div>
+
+    <div class="card">
+      <h2>Reversal Signals — mark anything anyone spots</h2>
+      <div id="factorGrid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Reversal Risk</h2>
+      <div class="savings-banner" style="background:linear-gradient(135deg, rgba(255,176,32,0.1), rgba(255,176,32,0.02)); border-color:rgba(255,176,32,0.35);">
+        <div>
+          <div style="font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Chance the trade goes against the team bias</div>
+          <div class="big num" id="reversalPct" style="color:var(--t1);">—</div>
+        </div>
+        <div class="desc" id="reversalVerdict">Set the factors above — any strong signal against the team bias raises this reading.</div>
+      </div>
+      <div id="reversalFlags" style="font-size:12px; color:var(--muted); margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-impact">
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+    <!-- ===== COLUMN A ===== -->
+    <div>
+      <div class="card">
+        <h2 style="color:var(--accent);">Position A</h2>
+        <div class="field">
+          <label>Direction</label>
+          <div class="preset-btns" style="margin-bottom:0;">
+            <div class="dir-btn active" data-dir="LONG" data-col="A">▲ LONG</div>
+            <div class="dir-btn" data-dir="SHORT" data-col="A">▼ SHORT</div>
+          </div>
+        </div>
+        <div class="field"><label>Entry Price</label><input type="number" id="aEntry" value="4050" step="0.05"></div>
+        <div class="field"><label>Total Lot Size</label><input type="number" id="aLots" value="50" min="0" step="1"></div>
+        <div class="field"><label>$ / pt / lot</label><input type="number" id="aVpp" value="1" min="0" step="0.01"></div>
+        <div class="field" style="margin-bottom:0;"><label>Flat SL (pts)</label><input type="number" id="aFlatSL" value="15" min="0" step="0.5"></div>
+      </div>
+      <div class="card">
+        <h2>Exit Allocation</h2>
+        <div class="preset-btns" id="aPresets">
+          <div class="preset active" data-col="A" data-p="70,20,10">70 / 20 / 10</div>
+          <div class="preset" data-col="A" data-p="50,30,20">50 / 30 / 20</div>
+        </div>
+        <div class="tier"><div class="tier-head"><span class="swatch" style="background:var(--t1)"></span>Tier 1</div><div class="tier-inputs"><div><label>%</label><input type="number" id="aP1" value="70"></div><div><label>SL pts</label><input type="number" id="aSL1" value="8" step="0.5"></div></div></div>
+        <div class="tier"><div class="tier-head"><span class="swatch" style="background:var(--t2)"></span>Tier 2</div><div class="tier-inputs"><div><label>%</label><input type="number" id="aP2" value="20"></div><div><label>SL pts</label><input type="number" id="aSL2" value="12" step="0.5"></div></div></div>
+        <div class="tier" style="margin-bottom:0;"><div class="tier-head"><span class="swatch" style="background:var(--t3)"></span>Tier 3</div><div class="tier-inputs"><div><label>%</label><input type="number" id="aP3" value="10"></div><div><label>SL pts</label><input type="number" id="aSL3" value="15" step="0.5"></div></div></div>
+        <div id="aPctWarning" style="display:none; margin-top:10px; font-size:12px; color:var(--t1);">⚠ Tiers don't total 100%</div>
+      </div>
+      <div class="card">
+        <h2 id="aTicketTitle">Order Ticket — A</h2>
+        <div class="ticket"><div class="ticket-row head"><div>Tier</div><div>Action</div><div>Price</div><div>Lots</div></div><div id="aTicketBody"></div></div>
+        <button class="copy-btn" data-col="A" id="aCopyTicket">Copy ticket A</button>
+      </div>
+      <div class="card">
+        <h2>Tier Breakdown — A</h2>
+        <table><thead><tr><th>Tier</th><th>Lots</th><th>SL pts</th><th>Loss</th></tr></thead><tbody id="aBreakdown"></tbody></table>
+      </div>
+      <div class="card">
+        <h2>Flat vs Impact — A</h2>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+          <div class="stat danger" style="padding:14px;"><div class="label">Flat SL Loss</div><div class="value num" id="aFlatLoss" style="font-size:20px;">$0</div></div>
+          <div class="stat accent" style="padding:14px;"><div class="label">Impact Loss</div><div class="value num" id="aImpLoss" style="font-size:20px;">$0</div></div>
+        </div>
+        <div style="text-align:center; padding:12px; background:rgba(0,217,160,0.08); border:1px solid rgba(0,217,160,0.3); border-radius:8px;">
+          <span style="font-size:12px; color:var(--muted);">MONEY SAVED</span><br>
+          <span class="num" id="aSaved" style="font-size:22px; font-weight:700; color:var(--accent);">$0 (0%)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== COLUMN B ===== -->
+    <div>
+      <div class="card">
+        <h2 style="color:var(--kp);">Position B</h2>
+        <div class="field">
+          <label>Direction</label>
+          <div class="preset-btns" style="margin-bottom:0;">
+            <div class="dir-btn active" data-dir="LONG" data-col="B">▲ LONG</div>
+            <div class="dir-btn" data-dir="SHORT" data-col="B">▼ SHORT</div>
+          </div>
+        </div>
+        <div class="field"><label>Entry Price</label><input type="number" id="bEntry" value="4050" step="0.05"></div>
+        <div class="field"><label>Total Lot Size</label><input type="number" id="bLots" value="50" min="0" step="1"></div>
+        <div class="field"><label>$ / pt / lot</label><input type="number" id="bVpp" value="1" min="0" step="0.01"></div>
+        <div class="field" style="margin-bottom:0;"><label>Flat SL (pts)</label><input type="number" id="bFlatSL" value="15" min="0" step="0.5"></div>
+      </div>
+      <div class="card">
+        <h2>Exit Allocation</h2>
+        <div class="preset-btns" id="bPresets">
+          <div class="preset active" data-col="B" data-p="70,20,10">70 / 20 / 10</div>
+          <div class="preset" data-col="B" data-p="50,30,20">50 / 30 / 20</div>
+        </div>
+        <div class="tier"><div class="tier-head"><span class="swatch" style="background:var(--t1)"></span>Tier 1</div><div class="tier-inputs"><div><label>%</label><input type="number" id="bP1" value="70"></div><div><label>SL pts</label><input type="number" id="bSL1" value="8" step="0.5"></div></div></div>
+        <div class="tier"><div class="tier-head"><span class="swatch" style="background:var(--t2)"></span>Tier 2</div><div class="tier-inputs"><div><label>%</label><input type="number" id="bP2" value="20"></div><div><label>SL pts</label><input type="number" id="bSL2" value="12" step="0.5"></div></div></div>
+        <div class="tier" style="margin-bottom:0;"><div class="tier-head"><span class="swatch" style="background:var(--t3)"></span>Tier 3</div><div class="tier-inputs"><div><label>%</label><input type="number" id="bP3" value="10"></div><div><label>SL pts</label><input type="number" id="bSL3" value="15" step="0.5"></div></div></div>
+        <div id="bPctWarning" style="display:none; margin-top:10px; font-size:12px; color:var(--t1);">⚠ Tiers don't total 100%</div>
+      </div>
+      <div class="card">
+        <h2 id="bTicketTitle">Order Ticket — B</h2>
+        <div class="ticket"><div class="ticket-row head"><div>Tier</div><div>Action</div><div>Price</div><div>Lots</div></div><div id="bTicketBody"></div></div>
+        <button class="copy-btn" data-col="B" id="bCopyTicket">Copy ticket B</button>
+      </div>
+      <div class="card">
+        <h2>Tier Breakdown — B</h2>
+        <table><thead><tr><th>Tier</th><th>Lots</th><th>SL pts</th><th>Loss</th></tr></thead><tbody id="bBreakdown"></tbody></table>
+      </div>
+      <div class="card">
+        <h2>Flat vs Impact — B</h2>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+          <div class="stat danger" style="padding:14px;"><div class="label">Flat SL Loss</div><div class="value num" id="bFlatLoss" style="font-size:20px;">$0</div></div>
+          <div class="stat accent" style="padding:14px;"><div class="label">Impact Loss</div><div class="value num" id="bImpLoss" style="font-size:20px;">$0</div></div>
+        </div>
+        <div style="text-align:center; padding:12px; background:rgba(0,217,160,0.08); border:1px solid rgba(0,217,160,0.3); border-radius:8px;">
+          <span style="font-size:12px; color:var(--muted);">MONEY SAVED</span><br>
+          <span class="num" id="bSaved" style="font-size:22px; font-weight:700; color:var(--accent);">$0 (0%)</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  </div>
+
+  <div class="view" id="view-journal">
+    <div class="jstats" id="jStats"></div>
+
+    <div class="card">
+      <h2>Strategies</h2>
+      <div class="save-row">
+        <input type="text" id="stratName" placeholder="e.g. Strategy #5 — London breakout" maxlength="60">
+        <button class="save-btn" id="stratAdd">Add</button>
+      </div>
+      <div id="stratList" style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Log a Trade</h2>
+      <div style="display:grid; grid-template-columns:1.2fr 0.8fr 1.1fr 1.4fr 0.9fr 0.8fr 1fr; gap:10px; align-items:end;">
+        <div><label>Account</label><select id="jAccount"><option value="Lucid">Lucid Account</option><option value="FundingPip">Funding Pip</option><option value="Salary">Salary Account</option></select></div>
+        <div><label>Pair</label><input type="text" id="jPair" placeholder="XAUUSD"></div>
+        <div><label>Position</label><select id="jPosition"><option value="Long">Long</option><option value="Short">Short</option></select></div>
+        <div><label>Date</label><input type="date" id="jDate"></div>
+        <div><label>Strategy</label><select id="jStrategy"><option value="">— none —</option></select></div>
+        <div><label>Outcome</label><select id="jOutcome"><option value="win">Win</option><option value="loss">Loss</option><option value="be">Break-even</option></select></div>
+        <div><label>Buy Price</label><input type="number" id="jBuyPrice" step="0.01" placeholder="4050.00"></div>
+        <div><label>Sell Price</label><input type="number" id="jSellPrice" step="0.01" placeholder="4038.00"></div>
+        <div><label>Planned Target</label><input type="number" id="jPlannedTarget" step="0.01" placeholder="4080.00"></div>
+        <div><label>Actual Target</label><input type="number" id="jActualTarget" step="0.01" placeholder="4075.00"></div>
+        <div><label>Profit / Loss ($)</label><input type="number" id="jPnlPct" step="0.01" placeholder="-250.00"></div>
+        <div><label>Chart</label><input type="file" id="jChart" accept="image/*" style="font-size:11px; padding:8px 6px;"></div>
+      </div>
+      <div style="margin-top:12px;"><label>Notes</label><textarea id="jNotes" rows="2" placeholder="What happened? Was Impact SL followed?"></textarea></div>
+      <button class="save-btn" id="jAdd" style="margin-top:12px;">Add to journal</button>
+      <div class="plans-status" id="jStatus"></div>
+    </div>
+    <div class="card" style="margin-bottom:20px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button class="small-btn" id="calPrev">‹</button>
+          <span style="font-size:16px; font-weight:700;" id="calTitle"></span>
+          <button class="small-btn" id="calNext">›</button>
+          <button class="small-btn" id="calToday">Today</button>
+        </div>
+        <div style="font-size:12px; color:var(--muted);">
+          PnL: <span id="calMonthPnl" class="num" style="font-weight:700;"></span>
+          &nbsp;&nbsp;Trading Days: <span id="calMonthDays" class="num" style="font-weight:700; color:var(--text);"></span>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 200px; gap:20px; align-items:start;">
+        <div>
+          <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-bottom:4px;">
+            <div style="text-align:center; font-size:11px; color:var(--muted); padding:6px 0;">Sun</div>
+            <div style="text-align:center; font-size:11px; color:var(--muted); padding:6px 0;">Mon</div>
+            <div style="text-align:center; font-size:11px; color:var(--muted); padding:6px 0;">Tue</div>
+            <div style="text-align:center; font-size:11px; color:var(--muted); padding:6px 0;">Wed</div>
+            <div style="text-align:center; font-size:11px; color:var(--muted); padding:6px 0;">Thu</div>
+            <div style="text-align:center; font-size:11px; color:var(--muted); padding:6px 0;">Fri</div>
+            <div style="text-align:center; font-size:11px; color:var(--muted); padding:6px 0;">Sat</div>
+          </div>
+          <div id="calGrid" style="display:grid; grid-template-columns:repeat(7,1fr); gap:3px;"></div>
+        </div>
+        <div id="calWeekly" style="display:flex; flex-direction:column; gap:8px;"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Trade History</h2>
+      <div style="overflow-x:auto;">
+      <table>
+        <thead><tr><th>Account</th><th>Pair</th><th>Position</th><th>Date</th><th>Strategy</th><th>Outcome</th><th>P&amp;L ($)</th><th>Chart</th><th></th></tr></thead>
+        <tbody id="jBody"></tbody>
+      </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= VIEW: PROBABILITY BOARD ================= -->
+  <div class="view" id="view-probboard">
+    <div class="pb-root">
+      <div class="pb-topbar">
+        <div>
+          <div class="pb-brand"><span class="pb-dot"></span>Probability Board</div>
+          <div class="pb-sub">paste a trade, write the reasoning, make the call</div>
+        </div>
+        <button class="pb-newbtn" id="pbNew">+ new trade</button>
+      </div>
+      <div class="pb-body">
+        <div class="pb-rail" id="pbRail"></div>
+        <div class="pb-main" id="pbMain"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
       <footer class="colophon">
         <p>
           Confirm contract size, point, tick value, and margin in MT5 before you send the order.
-          Hochsternn Desk does not connect to a trading account. Closes stay in this browser.
+          Hochsternn Desk does not connect to a trading account. Closes stay in this browser. Probability Board charts are shared when both of you open this same desk.
         </p>
       </footer>
     </div>
     <script type="module" src="app.js"></script>
+    <script src="os.js"></script>
   </body>
 </html>
