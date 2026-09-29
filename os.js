@@ -850,7 +850,6 @@ function pbResizeImage(dataUrl, cb){
 
 
 
-
 function pbScheduleSave(){
   if(pbSaveTimer) clearTimeout(pbSaveTimer);
   pbSaveTimer = setTimeout(pbSaveAll, 600);
@@ -889,7 +888,6 @@ function pbRenderRail(){
 
 function pbEsc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
 function pbEscHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
 
 
 
@@ -1002,6 +1000,18 @@ async function detectApi() {
     apiMode = "local";
   }
   paintSync(true);
+  if (apiMode === "remote" && !window.__hochsternnLive) {
+    window.__hochsternnLive = setInterval(() => {
+      if (document.querySelector("#view-journal")?.classList.contains("active")) {
+        loadJournal();
+        loadStrategies();
+      }
+      if (document.querySelector("#view-impact")?.classList.contains("active")) impactLoad(true);
+      if (document.querySelector("#view-plans")?.classList.contains("active")) loadProbBoard(false);
+      if (document.querySelector("#view-cockpit")?.classList.contains("active") && board) loadBoard(false);
+      if (document.querySelector("#view-probboard")?.classList.contains("active")) pbLoad();
+    }, 4000);
+  }
 }
 
 function getKey() { return ""; }
