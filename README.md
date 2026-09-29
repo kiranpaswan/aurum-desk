@@ -8,9 +8,9 @@ Open the shared desk with:
 npm start
 ```
 
-Then both of you visit `http://127.0.0.1:4173`. Probability Board charts are stored on that desk, so a screenshot one of you adds is the same file the other person sees. Opening the HTML file directly keeps the chart in that browser only.
+Then both of you visit the same address, for example `http://127.0.0.1:4173` on that computer, or the address of the machine running the desk. The profit book, calculator settings, cockpit, Risk-O-Meter, Impact SL, journal, and Probability Board charts stay on that desk, so each of you sees what the other saved. Opening the HTML file directly keeps a private copy in that browser only.
 
-The position-size book stays in `localStorage`. Nothing is sent to a broker.
+Nothing is sent to a broker.
 
 ## Position size
 
