@@ -2,13 +2,15 @@
 
 A private trading desk for one target: **$10,000 in five months**, with an MT5 position-size calculator for gold, majors, minors, and exotics.
 
-Open `index.html` in a browser, or serve the folder:
+Open the shared desk with:
 
 ```bash
-python3 -m http.server 4173
+npm start
 ```
 
-Then visit `http://localhost:4173`. Closed trades and calculator settings stay in `localStorage` on that browser. Nothing is sent to a broker.
+Then both of you visit `http://127.0.0.1:4173`. Probability Board charts are stored on that desk, so a screenshot one of you adds is the same file the other person sees. Opening the HTML file directly keeps the chart in that browser only.
+
+The position-size book stays in `localStorage`. Nothing is sent to a broker.
 
 ## Position size
 
