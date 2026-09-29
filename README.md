@@ -1,4 +1,4 @@
-# Aurum Desk
+# Hochsternn Desk
 
 A private trading desk for one target: **$10,000 in five months**, with an MT5 position-size calculator for gold, majors, minors, and exotics.
 
