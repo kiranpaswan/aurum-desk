@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aurum Desk</title>
+    <meta
+      name="description"
+      content="MT5 position sizing and a five-month book for a $10,000 trading goal."
+    />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,560;0,9..144,650;1,9..144,560&family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="sheet">
+      <header class="top">
+        <div class="brand">
+          <p class="eyebrow">Aurum Desk</p>
+          <h1>Ten thousand in five months.</h1>
+          <p class="deck">
+            Size every MT5 ticket to the stop, then keep a private book of what actually closed.
+            The runway starts today.
+          </p>
+        </div>
+        <div class="ring-wrap">
+          <div class="ring" id="ring" style="--p: 0">
+            <div>
+              <strong id="ring-label">0%</strong>
+              <span id="ring-caption">of goal</span>
+            </div>
+          </div>
+          <p class="deadline">
+            <span id="deadline">—</span>
+            <strong id="days-left">—</strong>
+          </p>
+        </div>
+      </header>
+
+      <section class="goal" aria-label="Profit goal">
+        <div class="booked">
+          <p class="kicker">Booked profit</p>
+          <p class="earned" id="earned">$0.00</p>
+          <p class="pace" id="pace"></p>
+        </div>
+        <ol class="months" id="months"></ol>
+        <details class="plan">
+          <summary>Plan</summary>
+          <div class="plan-grid">
+            <label>
+              Profit target
+              <input id="target" type="number" min="1" step="100" inputmode="decimal" />
+            </label>
+            <label>
+              Start
+              <input id="start-date" type="date" />
+            </label>
+            <label>
+              Months
+              <input id="horizon" type="number" min="1" max="24" step="1" />
+            </label>
+          </div>
+        </details>
+      </section>
+
+      <section class="instrument" id="instrument" aria-label="Position size calculator">
+        <div class="inputs">
+          <div class="instrument-head">
+            <h2>Size</h2>
+            <p>The number on the right is the volume to type into MT5.</p>
+          </div>
+
+          <label class="find">
+            Find a pair
+            <input id="symbol-filter" type="search" placeholder="XAUUSD, euro, yen…" autocomplete="off" />
+          </label>
+          <label>
+            Symbol
+            <select id="symbol" size="7"></select>
+          </label>
+
+          <div class="grid-2">
+            <label>
+              Account currency
+              <select id="account"></select>
+            </label>
+            <label>
+              Account balance
+              <input id="balance" type="number" min="0" step="0.01" inputmode="decimal" />
+            </label>
+            <label>
+              Risk
+              <input id="risk" type="number" min="0" max="100" step="0.01" inputmode="decimal" />
+            </label>
+            <label>
+              Amount at risk
+              <input id="risk-money" type="number" min="0" step="0.01" inputmode="decimal" />
+            </label>
+            <label>
+              Stop distance
+              <input id="stop" type="number" min="0" step="0.1" inputmode="decimal" />
+            </label>
+            <label>
+              Stop unit
+              <select id="unit">
+                <option value="pips">Pips</option>
+                <option value="points">MT5 points</option>
+              </select>
+            </label>
+          </div>
+          <p class="distance" id="distance-line"></p>
+          <p class="hot-note" id="hot-note">Above 2%. One loss takes a real piece of the month.</p>
+
+          <div class="grid-2">
+            <label>
+              MT5 price
+              <input id="price" type="number" min="0" step="0.00001" inputmode="decimal" placeholder="From Market Watch" />
+            </label>
+            <label>
+              Leverage
+              <input id="leverage" type="number" min="1" step="1" inputmode="decimal" />
+            </label>
+          </div>
+          <p class="hint" id="price-hint"></p>
+
+          <details class="spec-edit">
+            <summary>Match the MT5 specification</summary>
+            <p class="hint tight">
+              Right-click the symbol in Market Watch, then Specification. Defaults are the usual
+              MetaTrader 5 contract. A pasted tick value replaces the rate math.
+            </p>
+            <div class="grid-2">
+              <label>
+                Contract size
+                <input id="contract" type="number" min="0" step="1" inputmode="decimal" />
+              </label>
+              <label>
+                Pip size
+                <input id="pip-size" type="number" min="0" step="0.00001" inputmode="decimal" />
+              </label>
+              <label>
+                Point
+                <input id="point-size" type="number" min="0" step="0.00001" inputmode="decimal" />
+              </label>
+              <label>
+                Lot step
+                <input id="lot-step" type="number" min="0" step="0.01" inputmode="decimal" />
+              </label>
+              <label class="span-2">
+                Tick value in account currency
+                <input id="tick-value" type="number" min="0" step="0.0001" inputmode="decimal" placeholder="Optional, per point, per 1.00 lot" />
+              </label>
+            </div>
+          </details>
+        </div>
+
+        <div class="readout" aria-live="polite">
+          <p class="kicker">MT5 volume</p>
+          <p class="volume" id="volume">—</p>
+          <p class="caption" id="volume-caption"></p>
+          <p class="error" id="result-error" hidden></p>
+          <dl class="stats" id="stats">
+            <div>
+              <dt>Amount at risk</dt>
+              <dd id="risk-out">—</dd>
+            </div>
+            <div>
+              <dt id="units-label">Units</dt>
+              <dd id="units-out">—</dd>
+            </div>
+            <div>
+              <dt>Mini lots</dt>
+              <dd id="mini-out">—</dd>
+            </div>
+            <div>
+              <dt>Micro lots</dt>
+              <dd id="micro-out">—</dd>
+            </div>
+            <div>
+              <dt>Pip value at volume</dt>
+              <dd id="pip-out">—</dd>
+            </div>
+            <div>
+              <dt>Margin estimate</dt>
+              <dd id="margin-out">—</dd>
+            </div>
+          </dl>
+          <p class="spec-line" id="spec-line"></p>
+          <button type="button" class="copy" id="copy">Copy volume</button>
+          <p class="rates" id="rate-status"></p>
+        </div>
+      </section>
+
+      <section class="ledger" aria-label="Closed trades">
+        <div class="ledger-head">
+          <h2>Book</h2>
+          <button type="button" class="text-button" id="reset">Reset this browser</button>
+        </div>
+        <form id="trade-form" class="trade-form">
+          <label>
+            Date
+            <input id="trade-date" type="date" required />
+          </label>
+          <label>
+            Symbol
+            <input id="trade-symbol" type="text" maxlength="16" placeholder="XAUUSD" required />
+          </label>
+          <label>
+            Profit / loss
+            <input id="trade-pnl" type="number" step="0.01" inputmode="decimal" placeholder="250 or -80" required />
+          </label>
+          <label>
+            Note
+            <input id="trade-note" type="text" maxlength="80" placeholder="Optional" />
+          </label>
+          <button type="submit">Log close</button>
+        </form>
+        <div id="trades"></div>
+      </section>
+
+      <footer class="colophon">
+        <p>
+          Confirm contract size, point, tick value, and margin in MT5 before you send the order.
+          Aurum Desk does not connect to a trading account. Closes stay in this browser.
+        </p>
+      </footer>
+    </div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
