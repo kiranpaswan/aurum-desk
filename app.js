@@ -1,7 +1,7 @@
 import { SYMBOLS, getSymbol, midPrice, sizePosition, usdPerUnitFromUsdBaseRates } from "./sizing.js";
 import { buildPlan, todayIso } from "./plan.js";
 
-const KEY = "aurum-desk-v1";
+const KEY = "hochsternn-desk-v1";
 let volumePlain = "";
 const ACCOUNTS = ["USD", "EUR", "GBP", "AUD", "NZD", "CAD", "CHF", "JPY"];
 
@@ -262,7 +262,7 @@ function paintSize(result) {
 
   if (!result.ok) {
     volumePlain = "";
-    els.volume.textContent = "\u2014";
+    els.volume.textContent = "—";
     els.volume.classList.add("bad");
     els.caption.textContent = "";
     els.error.hidden = false;
@@ -290,7 +290,7 @@ function paintSize(result) {
       ? "Need a price"
       : `${money(result.margin, result.account)} at 1:${trimNumber(result.leverage)}`;
     const pipEach = money(result.pipValuePerLot, result.account, result.pipValuePerLot < 1 ? 4 : 2);
-    els.specLine.textContent = `${specSentence(spec)} \u00b7 ${pipEach} per pip, per 1.00 lot`;
+    els.specLine.textContent = `${specSentence(spec)} · ${pipEach} per pip, per 1.00 lot`;
   }
 
   if (state.ratesDate) {
@@ -300,7 +300,7 @@ function paintSize(result) {
   } else if (state.ratesError) {
     els.rates.textContent = "Rate feed unavailable. USD-quoted pairs still size. Paste a tick value for everything else.";
   } else {
-    els.rates.textContent = "Fetching mid-market rates\u2026";
+    els.rates.textContent = "Fetching mid-market rates…";
   }
 }
 
@@ -336,7 +336,7 @@ function paintTrades() {
     remove.type = "button";
     remove.className = "icon-button";
     remove.setAttribute("aria-label", `Delete ${trade.symbol} on ${trade.date}`);
-    remove.textContent = "\u00d7";
+    remove.textContent = "×";
     remove.addEventListener("click", () => {
       state.trades = state.trades.filter((item) => item.id !== trade.id);
       save();
@@ -436,7 +436,7 @@ function distanceSentence(spec, result) {
 
 function specSentence(spec) {
   const current = specFor(spec.symbol);
-  return `${spec.symbol} \u00b7 contract ${trimNumber(current.contractSize)} \u00b7 pip ${trimNumber(current.pipSize)} \u00b7 point ${trimNumber(current.point)}`;
+  return `${spec.symbol} · contract ${trimNumber(current.contractSize)} · pip ${trimNumber(current.pipSize)} · point ${trimNumber(current.point)}`;
 }
 
 function usdLeg(spec) {
@@ -460,7 +460,7 @@ async function loadRates() {
 
 async function copyVolume() {
   const text = volumePlain;
-  if (!text || text === "\u2014") return;
+  if (!text || text === "—") return;
   try {
     await navigator.clipboard.writeText(text);
     els.copy.textContent = "Copied";
