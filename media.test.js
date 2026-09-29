@@ -63,6 +63,49 @@ test("a friend can read a chart saved on the shared desk", async () => {
     const junkBody = await junk.json();
     assert.equal(junk.status, 415);
     assert.match(junkBody.error, /PNG/);
+
+    const book = {
+      target: 10000,
+      trades: [{ id: "t1", date: "2026-09-29", symbol: "XAUUSD", pnl: 250, note: "shared" }],
+      balance: 12500,
+      updatedAt: 50,
+      baseUpdatedAt: 0,
+    };
+    const bookPost = await fetch(base + "/api/book.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(book),
+    });
+    assert.equal(bookPost.status, 200);
+    const friendBook = await (await fetch(base + "/api/book.php")).json();
+    assert.equal(friendBook.trades[0].pnl, 250);
+    assert.equal(friendBook.trades[0].symbol, "XAUUSD");
+    assert.equal(friendBook.balance, 12500);
+    assert.equal(friendBook.baseUpdatedAt, undefined);
+
+    const stale = await fetch(base + "/api/book.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...book, trades: [], balance: 1, updatedAt: 40, baseUpdatedAt: 0 }),
+    });
+    assert.equal(stale.status, 409);
+    const afterStale = await (await fetch(base + "/api/book.php")).json();
+    assert.equal(afterStale.trades[0].pnl, 250);
+    assert.equal(afterStale.balance, 12500);
+
+    const newer = await fetch(base + "/api/book.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...book,
+        balance: 13000,
+        updatedAt: 80,
+        baseUpdatedAt: 50,
+      }),
+    });
+    assert.equal(newer.status, 200);
+    const afterNewer = await (await fetch(base + "/api/book.php")).json();
+    assert.equal(afterNewer.balance, 13000);
   } finally {
     await new Promise((resolve) => server.close(resolve));
     await rm(dir, { recursive: true, force: true });
