@@ -50,7 +50,7 @@ body {
 }
 
 .sheet::before {
-  content: "\u2736";
+  content: "✶";
   position: absolute;
   right: 28px;
   top: 8px;
